@@ -117,8 +117,8 @@
             <!-- Password with Toggle -->
             <div class="relative">
                 <label for="password" class="block text-sm font-medium mb-1">Password</label>
-                <!-- NOTE: Adjusted padding-right (pr-12) to accommodate the eye icon -->
-                <input type="password" id="password" placeholder="••••••••" class="input-field block w-full px-4 py-3 rounded-lg pr-12">
+                <!-- NOTE: Added autocomplete="off" to prevent password persistence/autofill -->
+                <input type="password" id="password" placeholder="••••••••" class="input-field block w-full px-4 py-3 rounded-lg pr-12" autocomplete="off">
                 
                 <!-- Eye Icon Toggle Button -->
                 <button id="password-toggle-btn" type="button" 
@@ -288,6 +288,9 @@
         function handleAuthSuccess(user) {
             showMessage('success', `Welcome ${user.displayName || user.email}! Redirecting to ${REDIRECT_URL}...`);
             
+            // Clear password input immediately upon successful login to prevent browser saving
+            passwordInput.value = ''; 
+
             // --- ACTUAL REDIRECTION ---
             setTimeout(() => {
                 window.location.href = REDIRECT_URL;
@@ -347,8 +350,23 @@
                     createdAt: new Date().toISOString()
                 });
                 
-                // On successful registration and profile data save, trigger redirection
-                handleAuthSuccess(user);
+                // --- MODIFIED LOGIC: LOG OUT AND REDIRECT TO LOGIN ---
+                // 1. Log out the newly created user (required since createUserWithEmailAndPassword signs them in)
+                await signOut(auth);
+
+                // 2. Show success message
+                showMessage('success', 'Registration successful! Please log in now.');
+                
+                // 3. Clear all input fields
+                emailInput.value = '';
+                passwordInput.value = '';
+                nameInput.value = '';
+                phoneInput.value = '';
+                ageInput.value = '';
+
+                // 4. Force switch back to the Login form view
+                toggleForm(false);
+                // No window.location.href change here, as the user stays on the page to manually log in.
 
             } catch (error) {
                 console.error('Registration error:', error.code, error.message);
