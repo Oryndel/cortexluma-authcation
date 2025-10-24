@@ -1,1 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Authentication</title>
+    <!-- 1. Include Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* A simple style for better focus visibility */
+        input:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+            outline: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen font-sans">
 
+    <!-- Main Authentication Card -->
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Firebase Auth</h1>
+
+        <!-- User Status Display -->
+        <div id="user-status" class="mb-6 p-3 bg-gray-50 rounded-lg text-center text-gray-700">
+            Logged out
+        </div>
+
+        <!-- Email and Password Form -->
+        <div class="space-y-4">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    placeholder="you@example.com" 
+                    class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500"
+                >
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    placeholder="••••••••" 
+                    class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500"
+                >
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-6 space-y-3">
+            <!-- Sign Up/In buttons (visible when logged out) -->
+            <div id="logged-out-buttons" class="grid grid-cols-2 gap-3">
+                <button 
+                    id="signup-btn" 
+                    class="w-full py-3 px-4 rounded-lg text-white font-semibold bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150"
+                >
+                    Sign Up
+                </button>
+                <button 
+                    id="login-btn" 
+                    class="w-full py-3 px-4 rounded-lg text-white font-semibold bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150"
+                >
+                    Log In
+                </button>
+            </div>
+
+            <!-- Log Out button (visible when logged in) -->
+            <button 
+                id="logout-btn" 
+                class="hidden w-full py-3 px-4 rounded-lg text-white font-semibold bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150"
+            >
+                Log Out
+            </button>
+        </div>
+
+    </div>
+
+    <!-- 
+      STEP 5a: INCLUDE FIREBASE SDKs
+      These must be loaded before your app.js file.
+    -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <!-- 
+      STEP 5a (continued): INCLUDE YOUR APP'S JAVASCRIPT
+      This file contains your custom logic.
+    -->
+    <script src="app.js"></script>
+
+</body>
+</html>
