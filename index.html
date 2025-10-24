@@ -9,12 +9,12 @@
     <style>
         /* Deep Blue Dark Theme Styling */
         :root {
-            --color-bg-dark: #12121e; /* Almost black for background */
-            --color-card-dark: #1f2937; /* Dark Slate Gray for card */
-            --color-primary: #3b82f6; /* Bright Blue for action */
+            --color-bg-dark: #12121e;
+            --color-card-dark: #1f2937;
+            --color-primary: #3b82f6;
             --color-primary-hover: #2563eb;
             --color-text-light: #e5e7eb;
-            --color-input-bg: #374151; /* Darker input background */
+            --color-input-bg: #374151;
             --color-input-border: #4b5563;
         }
 
@@ -51,27 +51,16 @@
             background-color: var(--color-primary-hover);
         }
         .btn-red {
-            background-color: #dc2626; /* Red 600 */
+            background-color: #dc2626;
             transition: background-color 0.2s ease;
         }
         .btn-red:hover {
-            background-color: #b91c1c; /* Red 700 */
+            background-color: #b91c1c;
         }
         .status-box {
             border: 1px solid var(--color-input-border);
-            background-color: #374151; /* Darker input color */
+            background-color: #374151;
             color: var(--color-text-light);
-        }
-        .password-toggle-container {
-            position: absolute;
-            right: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            /* Ensure the checkbox label is readable */
-            color: #9ca3af; 
-        }
-        .password-toggle-container input[type="checkbox"] {
-            margin-right: 0.25rem;
         }
         .disabled-ui {
             opacity: 0.5;
@@ -88,7 +77,7 @@
 
         <!-- User Status Display -->
         <div id="user-status" class="status-box mb-6 p-3 rounded-lg text-center text-sm font-medium">
-            Please log in or register.
+            Checking Firebase status...
         </div>
 
         <!-- Notification/Error Message Area -->
@@ -128,11 +117,20 @@
             <!-- Password with Toggle -->
             <div class="relative">
                 <label for="password" class="block text-sm font-medium mb-1">Password</label>
-                <input type="password" id="password" placeholder="••••••••" class="input-field block w-full px-4 py-3 rounded-lg pr-20">
-                <div class="password-toggle-container flex items-center">
-                    <input type="checkbox" id="show-password" class="form-checkbox h-4 w-4 text-blue-500 rounded border-gray-500 bg-gray-600 cursor-pointer">
-                    <label for="show-password" class="text-xs ml-1 cursor-pointer select-none">Show</label>
-                </div>
+                <!-- NOTE: Adjusted padding-right (pr-12) to accommodate the eye icon -->
+                <input type="password" id="password" placeholder="••••••••" class="input-field block w-full px-4 py-3 rounded-lg pr-12">
+                
+                <!-- Eye Icon Toggle Button -->
+                <button id="password-toggle-btn" type="button" 
+                        aria-label="Show Password"
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none transition duration-150 p-1 rounded-full">
+                    
+                    <!-- Eye Icon (Password Hidden - Default State) -->
+                    <svg id="eye-on" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    
+                    <!-- Slashed Eye Icon (Password Visible - Initially Hidden) -->
+                    <svg id="eye-off" class="h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.16 13.16 0 0 0 2 12s3 7 10 7a9.88 9.88 0 0 0 4.29-.93"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                </button>
             </div>
         </div>
 
@@ -187,9 +185,8 @@
 
     <!-- Firebase SDK Initialization and Application Logic -->
     <script type="module">
-        // Import necessary Firebase functions from the CDN
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- UI REFERENCES ---
@@ -201,7 +198,10 @@
         const ageInput = document.getElementById('age');
 
         const registerFields = document.getElementById('register-fields');
-        const showPasswordCheckbox = document.getElementById('show-password');
+        // New Icon References
+        const passwordToggleBtn = document.getElementById('password-toggle-btn');
+        const eyeOn = document.getElementById('eye-on');
+        const eyeOff = document.getElementById('eye-off');
         
         const loginBtn = document.getElementById('login-btn');
         const registerBtn = document.getElementById('register-btn');
@@ -213,46 +213,61 @@
         const messageBox = document.getElementById('message-box');
         const authForm = document.getElementById('auth-form');
 
-        // --- CONSTANTS ---
-        const REDIRECT_URL = 'https://oryndel.github.io/cortexluma/';
+        // --- CONFIGURATION ---
+        
+        // **!!! CRITICAL: CHANGE THIS URL TO YOUR TARGET WEBSITE !!!**
+        const REDIRECT_URL = 'https://your-website-domain.com/dashboard'; // Placeholder, replace with your URL
 
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBhUXJqjFiygvNx60CA4R8HrfZ2ghV8GCA",
+            authDomain: "contexluma-authcation.firebaseapp.com",
+            projectId: "contexluma-authcation",
+            storageBucket: "contexluma-authcation.firebasestorage.app",
+            messagingSenderId: "446271009223",
+            appId: "1:446271009223:web:3b5df78c8b9c43806669e2",
+            measurementId: "G-2ZPY3K5VYX"
+        };
+        
+        // Environment variables for pathing, prioritizing environment variables
+        const appId = typeof __app_id !== 'undefined' ? __app_id : FIREBASE_CONFIG.projectId;
+        
         /** Shows a temporary success or error message. */
         function showMessage(type, message) {
             messageBox.textContent = message;
             messageBox.className = `mb-4 p-3 rounded-lg text-sm font-medium ${type === 'error' ? 'bg-red-700 text-white' : 'bg-green-700 text-white'}`;
             messageBox.style.display = 'block';
-            // Do not hide error message if it is a fatal config error
             if (message.indexOf('FATAL') === -1) {
                 setTimeout(() => { messageBox.style.display = 'none'; }, 5000); 
             }
         }
 
-        // --- ENVIRONMENT VARIABLES (MANDATORY) ---
-        // The firebaseConfig and tokens are injected into the environment by the host system.
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        // --- CRITICAL CONFIG CHECK AND INITIALIZATION ---
+        // --- FIREBASE INITIALIZATION ---
         let auth, db;
-        if (!firebaseConfig || !firebaseConfig.apiKey || !firebaseConfig.projectId) {
-            const errorMessage = 'FATAL ERROR: Firebase configuration not found. Please ensure the backend is correctly configured.';
+        
+        if (!FIREBASE_CONFIG.apiKey || !FIREBASE_CONFIG.projectId) {
+            const errorMessage = 'FATAL ERROR: Firebase configuration is invalid (missing API Key or Project ID).';
             showMessage('error', errorMessage);
-            console.error(errorMessage);
-            // Visually disable the entire form if we can't connect
+            userStatus.textContent = 'Configuration Error.';
             authForm.classList.add('disabled-ui');
             document.getElementById('logged-out-buttons').classList.add('disabled-ui');
         } else {
-            // --- FIREBASE INITIALIZATION ---
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
+            try {
+                const app = initializeApp(FIREBASE_CONFIG);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                userStatus.textContent = 'Please log in or register.';
+            } catch (error) {
+                 const errorMessage = `FATAL INIT ERROR: Failed to initialize Firebase. Error: ${error.message}`;
+                 showMessage('error', errorMessage);
+                 userStatus.textContent = 'Initialization Failed.';
+                 authForm.classList.add('disabled-ui');
+                 document.getElementById('logged-out-buttons').classList.add('disabled-ui');
+            }
         }
 
         /** Toggles between Login and Register form views. */
         function toggleForm(isRegisterMode) {
             if (isRegisterMode) {
-                // Switch to Register View
                 formTitle.textContent = 'Create Account';
                 registerFields.classList.remove('hidden');
                 loginBtn.classList.add('hidden');
@@ -260,7 +275,6 @@
                 registerBtn.classList.remove('hidden');
                 toggleLoginBtn.classList.remove('hidden');
             } else {
-                // Switch to Login View
                 formTitle.textContent = 'Login';
                 registerFields.classList.add('hidden');
                 loginBtn.classList.remove('hidden');
@@ -270,21 +284,27 @@
             }
         }
 
-        /** Handles successful auth event: displays message and redirects. */
+        /** Handles successful auth event: displays message and performs redirect. */
         function handleAuthSuccess(user) {
-            showMessage('success', `Welcome ${user.displayName || user.email}! Redirecting...`);
+            showMessage('success', `Welcome ${user.displayName || user.email}! Redirecting to ${REDIRECT_URL}...`);
+            
+            // --- ACTUAL REDIRECTION ---
             setTimeout(() => {
-                // Redirect logic is simulated or points to a subsequent page
-                console.log('Simulating redirection to:', REDIRECT_URL);
-                // window.location.href = REDIRECT_URL; 
-            }, 1000);
+                window.location.href = REDIRECT_URL;
+            }, 1500); // Give 1.5 seconds for the user to see the success message
         }
 
         // --- EVENT LISTENERS ---
 
         // 1. Password Visibility Toggle
-        showPasswordCheckbox.addEventListener('change', (e) => {
-            passwordInput.type = e.target.checked ? 'text' : 'password';
+        passwordToggleBtn.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            
+            // Toggle icons visibility and button aria label
+            eyeOn.classList.toggle('hidden', !isPassword); // Hide eye-on if currently password (i.e., we are showing text)
+            eyeOff.classList.toggle('hidden', isPassword); // Show eye-off if currently password (i.e., we are showing text)
+            passwordToggleBtn.setAttribute('aria-label', isPassword ? 'Hide Password' : 'Show Password');
         });
 
         // 2. Form Toggles
@@ -311,15 +331,11 @@
             }
 
             try {
-                // 1. Create User with Email/Password
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // 2. Update Profile (DisplayName)
                 await updateProfile(user, { displayName: name });
 
-                // 3. Save additional data to Firestore
-                // Path: /artifacts/{appId}/users/{userId}/user_data/profile
                 const profileRef = doc(db, 
                     `artifacts/${appId}/users/${user.uid}/user_data/profile`
                 );
@@ -335,7 +351,13 @@
 
             } catch (error) {
                 console.error('Registration error:', error.code, error.message);
-                showMessage('error', `Registration Failed: ${error.message}`);
+                if (error.code === 'auth/email-already-in-use') {
+                    showMessage('error', 'Registration Failed: That email address is already registered.');
+                } else if (error.code === 'auth/network-request-failed') {
+                    showMessage('error', 'Registration Failed: Network error. Check your internet connection.');
+                } else {
+                    showMessage('error', `Registration Failed: ${error.message}`);
+                }
             }
         });
 
@@ -356,7 +378,13 @@
                 handleAuthSuccess(userCredential.user);
             } catch (error) {
                 console.error('Login error:', error.code, error.message);
-                showMessage('error', `Login Failed: ${error.message}`);
+                 if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+                    showMessage('error', 'Login Failed: Invalid email or password.');
+                } else if (error.code === 'auth/network-request-failed') {
+                    showMessage('error', 'Login Failed: Network error. Check your internet connection.');
+                } else {
+                    showMessage('error', `Login Failed: ${error.message}`);
+                }
             }
         });
 
@@ -365,7 +393,11 @@
             if (!auth) return; 
             try {
                 await signOut(auth);
-                showMessage('success', 'You have been logged out successfully.');
+                showMessage('success', 'You have been logged out successfully. Redirecting...');
+                // After logout, redirect back to the REDIRECT_URL (e.g., the homepage or login page)
+                setTimeout(() => {
+                    window.location.href = REDIRECT_URL;
+                }, 500);
             } catch (error) {
                 console.error('Logout error:', error.message);
                 showMessage('error', `Logout Failed: ${error.message}`);
@@ -376,12 +408,10 @@
         if (auth) {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    // User is signed in
                     userStatus.textContent = `Logged in as: ${user.displayName || user.email}`;
                     userStatus.classList.remove('bg-gray-700', 'text-gray-300');
-                    userStatus.classList.add('bg-green-700', 'text-white'); // Success color
+                    userStatus.classList.add('bg-green-700', 'text-white'); 
 
-                    // Hide Auth elements, Show Logout
                     toggleForm(false);
                     loginBtn.classList.add('hidden');
                     registerBtn.classList.add('hidden');
@@ -390,34 +420,15 @@
                     logoutBtn.classList.remove('hidden');
 
                 } else {
-                    // User is signed out
                     userStatus.textContent = 'Please log in or register.';
                     userStatus.classList.remove('bg-green-700', 'text-white');
-                    userStatus.classList.add('bg-gray-700', 'text-gray-300'); // Neutral status color
+                    userStatus.classList.add('bg-gray-700', 'text-gray-300'); 
 
-                    // Show Auth elements, Hide Logout
                     toggleForm(false); 
                     logoutBtn.classList.add('hidden');
                 }
             });
         }
-        
-        // --- INITIAL AUTHENTICATION CHECK ---
-        async function initialAuth() {
-            if (!auth) return; 
-
-            if (initialAuthToken) {
-                try {
-                    // Signs in using the environment's provided token
-                    await signInWithCustomToken(auth, initialAuthToken);
-                    console.log("Signed in with custom token.");
-                } catch (error) {
-                    console.error("Error signing in with custom token:", error);
-                }
-            }
-        }
-        initialAuth();
-
     </script>
 </body>
 </html>
