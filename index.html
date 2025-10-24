@@ -187,6 +187,7 @@
 
     <!-- Firebase SDK Initialization and Application Logic -->
     <script type="module">
+        // Import necessary Firebase functions from the CDN
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -226,14 +227,11 @@
             }
         }
 
-        apiKey: "AIzaSyBhUXJqjFiygvNx60CA4R8HrfZ2ghV8GCA",
-    authDomain: "contexluma-authcation.firebaseapp.com",
-    projectId: "contexluma-authcation",
-    storageBucket: "contexluma-authcation.firebasestorage.app",
-    messagingSenderId: "446271009223",
-    appId: "1:446271009223:web:3b5df78c8b9c43806669e2",
-    measurementId: "G-2ZPY3K5VYX"
-  };
+        // --- ENVIRONMENT VARIABLES (MANDATORY) ---
+        // The firebaseConfig and tokens are injected into the environment by the host system.
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
         // --- CRITICAL CONFIG CHECK AND INITIALIZATION ---
         let auth, db;
@@ -276,7 +274,9 @@
         function handleAuthSuccess(user) {
             showMessage('success', `Welcome ${user.displayName || user.email}! Redirecting...`);
             setTimeout(() => {
-                window.location.href = REDIRECT_URL;
+                // Redirect logic is simulated or points to a subsequent page
+                console.log('Simulating redirection to:', REDIRECT_URL);
+                // window.location.href = REDIRECT_URL; 
             }, 1000);
         }
 
@@ -293,7 +293,7 @@
 
         // 3. Register Handler
         registerBtn.addEventListener('click', async () => {
-            if (!auth || !db) return; // Prevent action if Firebase failed to initialize
+            if (!auth || !db) return; 
 
             const email = emailInput.value.trim();
             const password = passwordInput.value;
@@ -327,6 +327,7 @@
                     phone: phone || null,
                     age: age ? parseInt(age, 10) : null,
                     email: user.email, 
+                    displayName: name,
                     createdAt: new Date().toISOString()
                 });
                 
@@ -340,7 +341,7 @@
 
         // 4. Login Handler
         loginBtn.addEventListener('click', async () => {
-            if (!auth) return; // Prevent action if Firebase failed to initialize
+            if (!auth) return; 
 
             const email = emailInput.value.trim();
             const password = passwordInput.value;
@@ -361,7 +362,7 @@
 
         // 5. Logout Handler
         logoutBtn.addEventListener('click', async () => {
-            if (!auth) return; // Prevent action if Firebase failed to initialize
+            if (!auth) return; 
             try {
                 await signOut(auth);
                 showMessage('success', 'You have been logged out successfully.');
@@ -403,7 +404,7 @@
         
         // --- INITIAL AUTHENTICATION CHECK ---
         async function initialAuth() {
-            if (!auth) return; // Skip if Firebase is not initialized
+            if (!auth) return; 
 
             if (initialAuthToken) {
                 try {
