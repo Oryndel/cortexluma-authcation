@@ -347,6 +347,7 @@
                     createdAt: new Date().toISOString()
                 });
                 
+                // On successful registration and profile data save, trigger redirection
                 handleAuthSuccess(user);
 
             } catch (error) {
@@ -407,24 +408,32 @@
         // 6. Authentication State Listener (Mandatory for UI updates)
         if (auth) {
             onAuthStateChanged(auth, (user) => {
+                // Get the container for login/register buttons
+                const loggedOutButtonsContainer = document.getElementById('logged-out-buttons');
+
                 if (user) {
+                    // LOGGED IN: Hide form fields and login/register buttons, show logout
                     userStatus.textContent = `Logged in as: ${user.displayName || user.email}`;
                     userStatus.classList.remove('bg-gray-700', 'text-gray-300');
                     userStatus.classList.add('bg-green-700', 'text-white'); 
+                    
+                    authForm.classList.add('hidden');
+                    loggedOutButtonsContainer.classList.add('hidden');
 
-                    toggleForm(false);
-                    loginBtn.classList.add('hidden');
-                    registerBtn.classList.add('hidden');
-                    toggleRegisterBtn.classList.add('hidden');
-                    toggleLoginBtn.classList.add('hidden');
                     logoutBtn.classList.remove('hidden');
 
                 } else {
+                    // LOGGED OUT: Show form fields and login/register buttons, hide logout
                     userStatus.textContent = 'Please log in or register.';
                     userStatus.classList.remove('bg-green-700', 'text-white');
                     userStatus.classList.add('bg-gray-700', 'text-gray-300'); 
+                    
+                    authForm.classList.remove('hidden');
+                    loggedOutButtonsContainer.classList.remove('hidden');
 
+                    // Ensure the UI is set to the default (login) view
                     toggleForm(false); 
+                    
                     logoutBtn.classList.add('hidden');
                 }
             });
