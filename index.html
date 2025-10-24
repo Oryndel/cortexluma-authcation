@@ -3,92 +3,391 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Authentication</title>
-    <!-- 1. Include Tailwind CSS for styling -->
+    <title>Secure Dark Mode Authentication</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* A simple style for better focus visibility */
-        input:focus {
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        /* Deep Blue Dark Theme Styling */
+        :root {
+            --color-bg-dark: #12121e; /* Almost black for background */
+            --color-card-dark: #1f2937; /* Dark Slate Gray for card */
+            --color-primary: #3b82f6; /* Bright Blue for action */
+            --color-primary-hover: #2563eb;
+            --color-text-light: #e5e7eb;
+            --color-input-bg: #374151; /* Darker input background */
+            --color-input-border: #4b5563;
+        }
+
+        body {
+            background-color: var(--color-bg-dark);
+            font-family: 'Inter', sans-serif;
+            color: var(--color-text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .auth-card {
+            background-color: var(--color-card-dark);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        .input-field {
+            background-color: var(--color-input-bg);
+            border: 1px solid var(--color-input-border);
+            color: var(--color-text-light);
+            transition: all 0.15s ease-in-out;
+        }
+        .input-field:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 1px var(--color-primary);
             outline: none;
+        }
+        .btn-primary {
+            background-color: var(--color-primary);
+            transition: background-color 0.2s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+        }
+        .btn-red {
+            background-color: #dc2626; /* Red 600 */
+            transition: background-color 0.2s ease;
+        }
+        .btn-red:hover {
+            background-color: #b91c1c; /* Red 700 */
+        }
+        .status-box {
+            border: 1px solid var(--color-input-border);
+            background-color: #374151; /* Darker input color */
+            color: var(--color-text-light);
+        }
+        .password-toggle-container {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            /* Ensure the checkbox label is readable */
+            color: #9ca3af; 
+        }
+        .password-toggle-container input[type="checkbox"] {
+            margin-right: 0.25rem;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen font-sans">
+<body>
 
     <!-- Main Authentication Card -->
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div id="auth-container" class="auth-card p-8 rounded-xl w-full max-w-lg mx-4">
         
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Firebase Auth</h1>
+        <h1 id="form-title" class="text-3xl font-extrabold text-center mb-6 text-white tracking-wide">Login</h1>
 
         <!-- User Status Display -->
-        <div id="user-status" class="mb-6 p-3 bg-gray-50 rounded-lg text-center text-gray-700">
-            Logged out
+        <div id="user-status" class="status-box mb-6 p-3 rounded-lg text-center text-sm font-medium">
+            Please log in or register.
         </div>
 
-        <!-- Email and Password Form -->
+        <!-- Notification/Error Message Area -->
+        <div id="message-box" class="hidden mb-4 p-3 rounded-lg text-sm font-medium"></div>
+
+        <!-- Form Fields Container -->
         <div class="space-y-4">
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    placeholder="you@example.com" 
-                    class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500"
-                >
+            
+            <!-- Registration Fields (Initially Hidden for Login) -->
+            <div id="register-fields" class="space-y-4 hidden">
+                
+                <!-- Name -->
+                <div>
+                    <label for="name" class="block text-sm font-medium mb-1">Full Name</label>
+                    <input type="text" id="name" placeholder="John Doe" class="input-field block w-full px-4 py-3 rounded-lg">
+                </div>
+                
+                <!-- Phone Number -->
+                <div>
+                    <label for="phone" class="block text-sm font-medium mb-1">Phone Number</label>
+                    <input type="tel" id="phone" placeholder="(123) 456-7890" class="input-field block w-full px-4 py-3 rounded-lg">
+                </div>
+
+                <!-- Age -->
+                <div>
+                    <label for="age" class="block text-sm font-medium mb-1">Age</label>
+                    <input type="number" id="age" placeholder="25" min="1" max="150" class="input-field block w-full px-4 py-3 rounded-lg">
+                </div>
             </div>
+
+            <!-- Email -->
             <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    placeholder="••••••••" 
-                    class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500"
-                >
+                <label for="email" class="block text-sm font-medium mb-1">Email</label>
+                <input type="email" id="email" placeholder="you@example.com" class="input-field block w-full px-4 py-3 rounded-lg">
+            </div>
+
+            <!-- Password with Toggle -->
+            <div class="relative">
+                <label for="password" class="block text-sm font-medium mb-1">Password</label>
+                <input type="password" id="password" placeholder="••••••••" class="input-field block w-full px-4 py-3 rounded-lg pr-20">
+                <div class="password-toggle-container flex items-center">
+                    <input type="checkbox" id="show-password" class="form-checkbox h-4 w-4 text-blue-500 rounded border-gray-500 bg-gray-600 cursor-pointer">
+                    <label for="show-password" class="text-xs ml-1 cursor-pointer select-none">Show</label>
+                </div>
             </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="mt-6 space-y-3">
-            <!-- Sign Up/In buttons (visible when logged out) -->
-            <div id="logged-out-buttons" class="grid grid-cols-2 gap-3">
-                <button 
-                    id="signup-btn" 
-                    class="w-full py-3 px-4 rounded-lg text-white font-semibold bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150"
-                >
-                    Sign Up
-                </button>
+        <div class="mt-6 space-y-4">
+            
+            <!-- Logged Out Buttons (Primary Actions) -->
+            <div id="logged-out-buttons">
+                <!-- Login Button (Default View) -->
                 <button 
                     id="login-btn" 
-                    class="w-full py-3 px-4 rounded-lg text-white font-semibold bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150"
+                    class="btn-primary w-full py-3 px-4 rounded-lg text-white font-semibold shadow-md"
                 >
-                    Log In
+                    Login
+                </button>
+                
+                <!-- Toggle to Registration -->
+                <button 
+                    id="toggle-register-btn" 
+                    class="mt-3 w-full text-sm text-gray-400 hover:text-blue-400 transition duration-150"
+                >
+                    Don't have an account? <span class="font-semibold">Register Here</span>
+                </button>
+
+                <!-- Register Button (Hidden initially) -->
+                 <button 
+                    id="register-btn" 
+                    class="btn-primary w-full py-3 px-4 rounded-lg text-white font-semibold shadow-md hidden"
+                >
+                    Register Account
+                </button>
+
+                <!-- Toggle back to Login -->
+                <button 
+                    id="toggle-login-btn" 
+                    class="mt-3 w-full text-sm text-gray-400 hover:text-blue-400 transition duration-150 hidden"
+                >
+                    Already have an account? <span class="font-semibold">Login</span>
                 </button>
             </div>
 
             <!-- Log Out button (visible when logged in) -->
             <button 
                 id="logout-btn" 
-                class="hidden w-full py-3 px-4 rounded-lg text-white font-semibold bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150"
+                class="btn-red hidden w-full py-3 px-4 rounded-lg text-white font-semibold shadow-md"
             >
-                Log Out
+                Logout
             </button>
         </div>
 
     </div>
 
-    <!-- 
-      STEP 5a: INCLUDE FIREBASE SDKs
-      These must be loaded before your app.js file.
-    -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <!-- Firebase SDK Initialization and Application Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <!-- 
-      STEP 5a (continued): INCLUDE YOUR APP'S JAVASCRIPT
-      This file contains your custom logic.
-    -->
-    <script src="app.js"></script>
+        // --- ENVIRONMENT VARIABLES (MANDATORY) ---
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
+        // --- FIREBASE INITIALIZATION ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+
+        // --- UI REFERENCES ---
+        const formTitle = document.getElementById('form-title');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const nameInput = document.getElementById('name');
+        const phoneInput = document.getElementById('phone');
+        const ageInput = document.getElementById('age');
+
+        const registerFields = document.getElementById('register-fields');
+        const showPasswordCheckbox = document.getElementById('show-password');
+        
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const toggleRegisterBtn = document.getElementById('toggle-register-btn');
+        const toggleLoginBtn = document.getElementById('toggle-login-btn');
+
+        const userStatus = document.getElementById('user-status');
+        const messageBox = document.getElementById('message-box');
+
+        // --- CONSTANTS ---
+        const REDIRECT_URL = 'https://oryndel.github.io/cortexluma/';
+
+        // --- HELPER FUNCTIONS ---
+
+        /** Shows a temporary success or error message. */
+        function showMessage(type, message) {
+            messageBox.textContent = message;
+            messageBox.className = `mb-4 p-3 rounded-lg text-sm font-medium ${type === 'error' ? 'bg-red-700 text-white' : 'bg-green-700 text-white'}`;
+            messageBox.style.display = 'block';
+            setTimeout(() => { messageBox.style.display = 'none'; }, 5000); 
+        }
+
+        /** Toggles between Login and Register form views. */
+        function toggleForm(isRegisterMode) {
+            if (isRegisterMode) {
+                // Switch to Register View
+                formTitle.textContent = 'Create Account';
+                registerFields.classList.remove('hidden');
+                loginBtn.classList.add('hidden');
+                toggleRegisterBtn.classList.add('hidden');
+                registerBtn.classList.remove('hidden');
+                toggleLoginBtn.classList.remove('hidden');
+            } else {
+                // Switch to Login View
+                formTitle.textContent = 'Login';
+                registerFields.classList.add('hidden');
+                loginBtn.classList.remove('hidden');
+                toggleRegisterBtn.classList.remove('hidden');
+                registerBtn.classList.add('hidden');
+                toggleLoginBtn.classList.add('hidden');
+            }
+        }
+
+        /** Handles successful auth event: displays message and redirects. */
+        function handleAuthSuccess(user) {
+            showMessage('success', `Welcome ${user.displayName || user.email}! Redirecting...`);
+            setTimeout(() => {
+                window.location.href = REDIRECT_URL;
+            }, 1000);
+        }
+
+        // --- EVENT LISTENERS ---
+
+        // 1. Password Visibility Toggle
+        showPasswordCheckbox.addEventListener('change', (e) => {
+            passwordInput.type = e.target.checked ? 'text' : 'password';
+        });
+
+        // 2. Form Toggles
+        toggleRegisterBtn.addEventListener('click', () => toggleForm(true));
+        toggleLoginBtn.addEventListener('click', () => toggleForm(false));
+
+        // 3. Register Handler
+        registerBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const age = ageInput.value.trim();
+
+            if (!email || !password || !name || !phone || !age) {
+                showMessage('error', 'Please fill in all registration fields.');
+                return;
+            }
+            if (password.length < 6) {
+                 showMessage('error', 'Password must be at least 6 characters long.');
+                 return;
+            }
+
+            try {
+                // 1. Create User with Email/Password
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // 2. Update Profile (DisplayName)
+                await updateProfile(user, { displayName: name });
+
+                // 3. Save additional data to Firestore
+                // Path: /artifacts/{appId}/users/{userId}/user_data/profile
+                const profileRef = doc(db, 
+                    `artifacts/${appId}/users/${user.uid}/user_data/profile`
+                );
+                await setDoc(profileRef, {
+                    phone: phone,
+                    age: parseInt(age, 10),
+                    email: user.email, 
+                    createdAt: new Date().toISOString()
+                });
+                
+                handleAuthSuccess(user);
+
+            } catch (error) {
+                console.error('Registration error:', error.code, error.message);
+                showMessage('error', `Registration Failed: ${error.message}`);
+            }
+        });
+
+        // 4. Login Handler
+        loginBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                showMessage('error', 'Please enter both email and password.');
+                return;
+            }
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                handleAuthSuccess(userCredential.user);
+            } catch (error) {
+                console.error('Login error:', error.code, error.message);
+                showMessage('error', `Login Failed: ${error.message}`);
+            }
+        });
+
+        // 5. Logout Handler
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                showMessage('success', 'You have been logged out successfully.');
+            } catch (error) {
+                console.error('Logout error:', error.message);
+                showMessage('error', `Logout Failed: ${error.message}`);
+            }
+        });
+
+        // 6. Authentication State Listener (Mandatory for UI updates)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                userStatus.textContent = `Logged in as: ${user.displayName || user.email}`;
+                userStatus.classList.remove('bg-gray-700', 'text-gray-300');
+                userStatus.classList.add('bg-green-700', 'text-white'); // Success color
+
+                // Hide Auth elements, Show Logout
+                toggleForm(false);
+                loginBtn.classList.add('hidden');
+                registerBtn.classList.add('hidden');
+                toggleRegisterBtn.classList.add('hidden');
+                toggleLoginBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+
+            } else {
+                // User is signed out
+                userStatus.textContent = 'Please log in or register.';
+                userStatus.classList.remove('bg-green-700', 'text-white');
+                userStatus.classList.add('bg-gray-700', 'text-gray-300'); // Neutral status color
+
+                // Show Auth elements, Hide Logout
+                toggleForm(false); 
+                logoutBtn.classList.add('hidden');
+            }
+        });
+        
+        // --- INITIAL AUTHENTICATION CHECK ---
+        async function initialAuth() {
+            if (initialAuthToken) {
+                try {
+                    // Signs in using the environment's provided token
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("Signed in with custom token.");
+                } catch (error) {
+                    console.error("Error signing in with custom token:", error);
+                }
+            }
+        }
+        initialAuth();
+
+    </script>
 </body>
 </html>
