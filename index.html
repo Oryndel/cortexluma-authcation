@@ -216,7 +216,8 @@
         // --- CONFIGURATION ---
         
         // **!!! CRITICAL: CHANGE THIS URL TO YOUR TARGET WEBSITE !!!**
-        const REDIRECT_URL = 'https://oryndel.github.io/cortexluma/'; // Placeholder, replace with your URL
+        // Updated REDIRECT_URL to the user's specific link
+        const REDIRECT_URL = 'https://oryndel.github.io/cortexluma/'; 
 
         const FIREBASE_CONFIG = {
             apiKey: "AIzaSyBhUXJqjFiygvNx60CA4R8HrfZ2ghV8GCA",
@@ -286,15 +287,21 @@
 
         /** Handles successful auth event: displays message and performs redirect. */
         function handleAuthSuccess(user) {
-            showMessage('success', `Welcome ${user.displayName || user.email}! Redirecting to ${REDIRECT_URL}...`);
+            // Updated message to reflect quicker redirect
+            showMessage('success', `Welcome ${user.displayName || user.email}! Redirecting now...`);
             
-            // Clear password input immediately upon successful login to prevent browser saving
+            // Clear inputs
             passwordInput.value = ''; 
+            emailInput.value = '';
+            nameInput.value = '';
+            phoneInput.value = '';
+            ageInput.value = '';
 
             // --- ACTUAL REDIRECTION ---
+            // Reduced delay to 100ms for near-instant redirection
             setTimeout(() => {
                 window.location.href = REDIRECT_URL;
-            }, 1500); // Give 1.5 seconds for the user to see the success message
+            }, 100); 
         }
 
         // --- EVENT LISTENERS ---
@@ -334,6 +341,7 @@
             }
 
             try {
+                // createUserWithEmailAndPassword signs the user in automatically
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
@@ -350,23 +358,8 @@
                     createdAt: new Date().toISOString()
                 });
                 
-                // --- MODIFIED LOGIC: LOG OUT AND REDIRECT TO LOGIN ---
-                // 1. Log out the newly created user (required since createUserWithEmailAndPassword signs them in)
-                await signOut(auth);
-
-                // 2. Show success message
-                showMessage('success', 'Registration successful! Please log in now.');
-                
-                // 3. Clear all input fields
-                emailInput.value = '';
-                passwordInput.value = '';
-                nameInput.value = '';
-                phoneInput.value = '';
-                ageInput.value = '';
-
-                // 4. Force switch back to the Login form view
-                toggleForm(false);
-                // No window.location.href change here, as the user stays on the page to manually log in.
+                // Immediately redirect on successful registration
+                handleAuthSuccess(user); 
 
             } catch (error) {
                 console.error('Registration error:', error.code, error.message);
@@ -394,6 +387,7 @@
 
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                // Immediately redirect on successful login
                 handleAuthSuccess(userCredential.user);
             } catch (error) {
                 console.error('Login error:', error.code, error.message);
@@ -430,16 +424,11 @@
                 const loggedOutButtonsContainer = document.getElementById('logged-out-buttons');
 
                 if (user) {
-                    // LOGGED IN: Hide form fields and login/register buttons, show logout
-                    userStatus.textContent = `Logged in as: ${user.displayName || user.email}`;
-                    userStatus.classList.remove('bg-gray-700', 'text-gray-300');
-                    userStatus.classList.add('bg-green-700', 'text-white'); 
-                    
-                    authForm.classList.add('hidden');
-                    loggedOutButtonsContainer.classList.add('hidden');
-
-                    logoutBtn.classList.remove('hidden');
-
+                    // *** NEW LOGIC: Redirect instantly if user is already logged in on page load ***
+                    console.log(`User already logged in. Redirecting to: ${REDIRECT_URL}`);
+                    window.location.href = REDIRECT_URL;
+                    return; // Stop processing the UI on this page since we are redirecting
+                    // *************************************************************************
                 } else {
                     // LOGGED OUT: Show form fields and login/register buttons, hide logout
                     userStatus.textContent = 'Please log in or register.';
