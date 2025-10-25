@@ -56,35 +56,35 @@ const sendButton = document.getElementById('send-button');
 const BACKEND_URL = "https://cortexluma-backend.onrender.com/api/chat";
 let isLoading = false;
 
-function setLoading(state) {
+function setLoading(state){
 isLoading = state;
 sendButton.disabled = state;
 chatInput.disabled = state;
-errorMessage.textContent = '';
+errorMessage.textContent='';
 }
 
-function addMessage(sender, text) {
-const wrapper = document.createElement('div');
-wrapper.className = `flex ${sender==='user'?'justify-end':'justify-start'}`;
-const bubble = document.createElement('div');
-bubble.className = `p-3 rounded-xl max-w-xs md:max-w-lg text-sm shadow-md transition duration-300 ease-in-out ${sender==='user'?'bg-slate-600 rounded-br-none text-slate-100':'bg-indigo-600 rounded-tl-none text-white'}`;
-bubble.innerHTML = text.replace(/\n/g,'<br>');
+function addMessage(sender,text){
+const wrapper=document.createElement('div');
+wrapper.className=`flex ${sender==='user'?'justify-end':'justify-start'}`;
+const bubble=document.createElement('div');
+bubble.className=`p-3 rounded-xl max-w-xs md:max-w-lg text-sm shadow-md transition duration-300 ease-in-out ${sender==='user'?'bg-slate-600 rounded-br-none text-slate-100':'bg-indigo-600 rounded-tl-none text-white'}`;
+bubble.innerHTML=text.replace(/\n/g,'<br>');
 wrapper.appendChild(bubble);
 chatMessages.appendChild(wrapper);
-chatMessages.scrollTop = chatMessages.scrollHeight;
+chatMessages.scrollTop=chatMessages.scrollHeight;
 return bubble;
 }
 
 async function getAiResponse(prompt){
 setLoading(true);
-const placeholder = addMessage('ai','...');
+const placeholder=addMessage('ai','...');
 try{
-const response = await fetch(BACKEND_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:prompt})});
+const response=await fetch(BACKEND_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:prompt})});
 if(!response.ok) throw new Error(`Backend Status ${response.status}`);
-const data = await response.json();
-placeholder.innerHTML = data.reply || "🤖 No response received.";
-}catch(e){console.error(e); placeholder.innerHTML = `<span class="text-red-400 font-bold">Error:</span> ${e.message}`;}
-finally{setLoading(false); chatInput.focus(); chatMessages.scrollTop = chatMessages.scrollHeight;}
+const data=await response.json();
+placeholder.innerHTML=data.reply || "🤖 No response received.";
+}catch(e){console.error(e); placeholder.innerHTML=`<span class="text-red-400 font-bold">Error:</span> ${e.message}`;}
+finally{setLoading(false); chatInput.focus(); chatMessages.scrollTop=chatMessages.scrollHeight;}
 }
 
 chatForm.addEventListener('submit',e=>{
