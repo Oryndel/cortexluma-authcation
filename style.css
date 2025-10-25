@@ -1,0 +1,8 @@
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+textarea:focus, select:focus, button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #3b82f6;
+}
