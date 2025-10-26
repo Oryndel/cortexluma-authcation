@@ -67,19 +67,23 @@
         // before deployment to GitHub/Render. Failing to do so will cause the 'auth/invalid-api-key' error.
         const PLACEHOLDER_FIREBASE_CONFIG = {
             // Get this from your Firebase Project Settings -> Web App Config
-            apiKey: "", // <-- PASTE YOUR FIREBASE API KEY HERE!
-            authDomain: "", // <-- PASTE YOUR AUTH DOMAIN HERE! (e.g., 'your-project-id.firebaseapp.com')
-            projectId: "", // <-- PASTE YOUR PROJECT ID HERE! (e.g., 'your-project-id')
-            storageBucket: "", 
-            messagingSenderId: "", 
-            appId: "" 
-        };
+           const firebaseConfig = {
+  apiKey: "AIzaSyBqltSV0Frdq08XIZck1iNMm2_S0Th5DZ8",
+  authDomain: "study-2bfbf.firebaseapp.com",
+  projectId: "study-2bfbf",
+  storageBucket: "study-2bfbf.firebasestorage.app",
+  messagingSenderId: "144481769579",
+  appId: "1:144481769579:web:b688489521c5da9af3f92e",
+  measurementId: "G-WFZR61D075"
+ };
+
+        
         
         // This MUST match the path used in your Firestore Security Rules ('k10-study-hub').
         const PLACEHOLDER_APP_ID = "k10-study-hub"; 
         
         // Your key for the Gemini API (Get from Google AI Studio)
-        const PLACEHOLDER_GEMINI_API_KEY = ""; // <-- PASTE YOUR GEMINI API KEY HERE!
+        const PLACEHOLDER_GEMINI_API_KEY = "AIzaSyASXrOWVgv1noB2TxmDJkz9ERqqdgGfPg8"; // <-- PASTE YOUR GEMINI API KEY HERE!
 
         
         const appId = PLACEHOLDER_APP_ID;
