@@ -67,17 +67,15 @@
         // before deployment to GitHub/Render. Failing to do so will cause the 'auth/invalid-api-key' error.
         const PLACEHOLDER_FIREBASE_CONFIG = {
             // Get this from your Firebase Project Settings -> Web App Config
-           const firebaseConfig = {
-  apiKey: "AIzaSyBqltSV0Frdq08XIZck1iNMm2_S0Th5DZ8",
-  authDomain: "study-2bfbf.firebaseapp.com",
-  projectId: "study-2bfbf",
-  storageBucket: "study-2bfbf.firebasestorage.app",
-  messagingSenderId: "144481769579",
-  appId: "1:144481769579:web:b688489521c5da9af3f92e",
-  measurementId: "G-WFZR61D075"
- };
-
-        
+            // FIX APPLIED HERE: Removed the erroneous internal 'const firebaseConfig = {'
+            apiKey: "AIzaSyBqltSV0Frdq08XIZck1iNMm2_S0Th5DZ8",
+            authDomain: "study-2bfbf.firebaseapp.com",
+            projectId: "study-2bfbf",
+            storageBucket: "study-2bfbf.firebasestorage.app",
+            messagingSenderId: "144481769579",
+            appId: "1:144481769579:web:b688489521c5da9af3f92e",
+            measurementId: "G-WFZR61D075"
+        };
         
         // This MUST match the path used in your Firestore Security Rules ('k10-study-hub').
         const PLACEHOLDER_APP_ID = "k10-study-hub"; 
@@ -113,10 +111,10 @@
                 isAuthReady = true;
                 window.renderApp(); 
             }).catch((error) => {
-                // This catch block handles the 'auth/invalid-api-key' error
-                console.error("Firebase Auth Error: Failed to sign in anonymously. Check your API Key.", error);
+                // This catch block handles the 'auth/invalid-api-key' error or other auth failure
+                console.error("Firebase Auth Error: Failed to sign in anonymously. Check your API Key and ensure Anonymous Auth is enabled.", error);
                 userId = 'auth-error';
-                document.getElementById('user-id-display').textContent = 'API Key Error';
+                document.getElementById('user-id-display').textContent = 'API Key Error / Auth Disabled';
                 isAuthReady = true;
                 window.renderApp();
             });
@@ -231,13 +229,13 @@
 
         window.renderApp = () => {
             if (!isAuthReady) {
-                 mainContent.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-full bg-white rounded-xl shadow-lg p-8">
-                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-                        <p class="mt-4 text-lg text-indigo-600">Connecting to Study Hub...</p>
-                    </div>
-                `;
-                return;
+                    mainContent.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full bg-white rounded-xl shadow-lg p-8">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+                            <p class="mt-4 text-lg text-indigo-600">Connecting to Study Hub...</p>
+                        </div>
+                    `;
+                    return;
             }
 
             // Render Navigation
